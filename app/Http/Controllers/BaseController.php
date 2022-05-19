@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BaseFormRequest;
 use App\Http\Resources\DefaultCollection;
-use Illuminate\Http\JsonResponse;
+use Faker\Provider\Base;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class BaseController
 {
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
     protected $service;
 
     protected $jsonResource;
@@ -47,13 +56,11 @@ class BaseController
     }
 
     /**
-     * Generic database store method.
-     *
-     * @param int|null $unitId
+     * Store a new blog post.
      *
      * @return JsonResponse
      */
-    public function store(RequestInterface $request, $unitId = null)
+    public function store(BaseFormRequest $request)
     {
         try {
             DB::beginTransaction();
@@ -67,8 +74,6 @@ class BaseController
             return $this->_badRequestError(['errors' => $e->errors()]);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            app('sentry')->captureException($e);
 
             return $this->_genericError(['message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
         }
@@ -85,7 +90,7 @@ class BaseController
      *
      * @return JsonResponse
      */
-    public function update(RequestInterface $request, $id)
+    public function update(BaseFormRequest $request, $id)
     {
         $resource = $this->service->show($id);
 
@@ -98,7 +103,6 @@ class BaseController
         } catch (ValidationException $e) {
             return $this->_badRequestError(['errors' => $e->errors()]);
         } catch (\Exception $e) {
-            app('sentry')->captureException($e);
 
             return $this->_genericError(['message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
         }
@@ -126,7 +130,6 @@ class BaseController
         try {
             $this->service->destroy($resource);
         } catch (\Exception $e) {
-            app('sentry')->captureException($e);
 
             return $this->_genericError(['message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
         }
