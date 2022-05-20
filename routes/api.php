@@ -29,7 +29,7 @@ Route::prefix('v1')->group( function () {
         Route::delete('/students/{id}', 'destroy');
     });
 
-   /* Route::controller(TeacherController::class)->group( function () {
+   Route::controller(TeacherController::class)->group( function () {
         Route::get('/teachers', 'index');
         Route::get('/teachers/{id}', 'show');
         Route::post('/teachers', 'store');
@@ -83,5 +83,5 @@ Route::prefix('v1')->group( function () {
         Route::post('/frequencies', 'store');
         Route::put('/frequencies/{id}', 'update');
         Route::delete('/frequencies/{id}', 'destroy');
-    });*/
+    });
 });
